@@ -18,22 +18,34 @@ class RegisterMutation
                 'args' => [
                     'email' => Type::nonNull(Type::string()),
                     'password' => Type::nonNull(Type::string()),
+                    'username' => Type::nonNull(Type::string()),
                 ],
                 'resolve' => function ($root, $args) {
                     $pdo = Connection::getInstance();
 
+                    // Check if email exists
                     $check = $pdo->prepare("SELECT id FROM users WHERE email = :email");
                     $check->execute(['email' => $args['email']]);
                     if ($check->fetch()) {
                         return ['success' => false, 'message' => 'Email already registered.'];
                     }
 
+                    // Check if username exists
+                    $checkUsername = $pdo->prepare("SELECT id FROM users WHERE username = :username");
+                    $checkUsername->execute(['username' => $args['username']]);
+                    if ($checkUsername->fetch()) {
+                        return ['success' => false, 'message' => 'Username already taken.'];
+                    }
+
                     $passwordHash = password_hash($args['password'], PASSWORD_DEFAULT);
 
-                    $stmt = $pdo->prepare("INSERT INTO users (email, password_hash) VALUES (:email, :password_hash)");
+                    $stmt = $pdo->prepare(
+                        "INSERT INTO users (email, password_hash, username) VALUES (:email, :password_hash, :username)"
+                    );
                     $stmt->execute([
                         'email' => $args['email'],
                         'password_hash' => $passwordHash,
+                        'username' => $args['username'],
                     ]);
 
                     return ['success' => true, 'message' => 'User registered successfully.'];

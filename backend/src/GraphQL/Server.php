@@ -16,6 +16,10 @@ class Server
 {
     public static function handle(): void
     {   
+        // TODO: on launch uncomment
+        // $origin = getenv('FRONTEND_ORIGIN');
+
+        // header("Access-Control-Allow-Origin: " . $origin);
         header("Access-Control-Allow-Headers: Content-Type");
         header("Access-Control-Allow-Methods: POST, OPTIONS");
 
