@@ -9,6 +9,10 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 use Src\GraphQL\Server;
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
+$dotenv->safeLoad();
 
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/graphql', [Server::class, 'handle']);

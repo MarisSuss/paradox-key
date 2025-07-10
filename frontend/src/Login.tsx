@@ -1,50 +1,49 @@
 import { useState } from 'react';
+import { useMutation } from '@apollo/client';
+import { LOGIN_MUTATION } from './graphql/login';
 
-const Login = () => {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [login, { data, loading, error }] = useMutation(LOGIN_MUTATION);
 
-  const login = async () => {
-    const res = await fetch('http://localhost:8000/graphql', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `
-          mutation {
-            login(email: "${email}", password: "${password}") {
-              id
-              email
-            }
-          }
-        `,
-      }),
-    });
-
-    const data = await res.json();
-    console.log(data);
+  const handleLogin = async () => {
+    try {
+      await login({ variables: { email, password } });
+    } catch (e) {
+      console.error('Login error:', e);
+    }
   };
 
   return (
-    <div>
+    <div style={{ maxWidth: '400px', margin: '2rem auto', padding: '1rem', border: '1px solid #ccc', borderRadius: '8px' }}>
       <h2>Login</h2>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={login}>Login</button>
+      <div style={{ marginBottom: '1rem' }}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          style={{ width: '100%', padding: '0.5rem', marginBottom: '0.5rem' }}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          style={{ width: '100%', padding: '0.5rem' }}
+        />
+      </div>
+      <button onClick={handleLogin} disabled={loading} style={{ width: '100%', padding: '0.5rem' }}>
+        {loading ? 'Logging in...' : 'Login'}
+      </button>
+
+      {error && <p style={{ color: 'red', marginTop: '1rem' }}>Error: {error.message}</p>}
+      {data && (
+        <p style={{ color: data.login.success ? 'green' : 'red', marginTop: '1rem' }}>
+          {data.login.message}
+        </p>
+      )}
     </div>
   );
-};
-
-export default Login;
+}
