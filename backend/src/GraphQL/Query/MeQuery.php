@@ -4,30 +4,26 @@ declare(strict_types=1);
 
 namespace Src\GraphQL\Query;
 
-use GraphQL\Type\Definition\Type;
 use Src\Database\Connection;
 use Src\GraphQL\Type\UserType;
 
 class MeQuery
 {
-    public static function get(): array
+    public static function resolve()
     {
-        return [
-            'me' => [
-                'type' => UserType::get(),
-                'resolve' => function () {
-                    if (!isset($_SESSION['user_id'])) {
-                        return null;
-                    }
+        if (!isset($_SESSION['user_id'])) {
+            return null;
+        }
 
-                    $pdo = Connection::getInstance();
-                    $stmt = $pdo->prepare("SELECT id, email, created_at FROM users WHERE id = :id");
-                    $stmt->execute(['id' => $_SESSION['user_id']]);
-                    $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $pdo = Connection::getInstance();
+        $stmt = $pdo->prepare('SELECT id, username, email FROM users WHERE id = ?');
+        $stmt->execute([$_SESSION['user_id']]);
 
-                    return $user ?: null;
-                }
-            ]
-        ];
+        return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
+    }
+
+    public static function type()
+    {
+        return UserType::get();
     }
 }

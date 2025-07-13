@@ -9,21 +9,21 @@ use GraphQL\Type\Definition\Type;
 
 class UserType
 {
-    private static ?ObjectType $type = null;
+    private static ?ObjectType $instance = null;
 
     public static function get(): ObjectType
     {
-        if (self::$type === null) {
-            self::$type = new ObjectType([
+        if (self::$instance === null) {
+            self::$instance = new ObjectType([
                 'name' => 'User',
                 'fields' => [
-                    'id' => Type::nonNull(Type::int()),
+                    'id' => Type::nonNull(Type::id()),
                     'email' => Type::nonNull(Type::string()),
-                    'created_at' => Type::string(),
+                    'username' => Type::nonNull(Type::string()),
                 ],
             ]);
         }
 
-        return self::$type;
+        return self::$instance;
     }
 }

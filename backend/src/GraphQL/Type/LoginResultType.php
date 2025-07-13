@@ -9,20 +9,18 @@ use GraphQL\Type\Definition\Type;
 
 class LoginResultType
 {
-    private static ?ObjectType $type = null;
-
-    public static function get(): ObjectType
+    public static function type(): ObjectType
     {
-        if (self::$type === null) {
-            self::$type = new ObjectType([
-                'name' => 'LoginResult',
-                'fields' => [
-                    'success' => Type::nonNull(Type::boolean()),
-                    'message' => Type::nonNull(Type::string()),
+        return new ObjectType([
+            'name' => 'LoginResult',
+            'fields' => [
+                'success' => Type::nonNull(Type::boolean()),
+                'message' => Type::nonNull(Type::string()),
+                'user' => [
+                    'type' => UserType::get(),
+                    'resolve' => fn($root) => $root['user'] ?? null,
                 ],
-            ]);
-        }
-
-        return self::$type;
+            ],
+        ]);
     }
 }
