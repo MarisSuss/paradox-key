@@ -16,7 +16,8 @@ class MeQuery
             return null;
         }
 
-        return User::findById($_SESSION['user_id']);
+        $user = User::findById($_SESSION['user_id']);
+        return $user ? $user->toArray() : null;
     }
 
     public static function type()

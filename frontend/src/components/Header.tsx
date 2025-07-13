@@ -1,22 +1,31 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useApolloClient } from '@apollo/client';
+import { useApolloClient, useMutation } from '@apollo/client';
+import { LOGOUT_MUTATION } from '../graphql/logout';
 
 export default function Header() {
   const { user, refetch } = useAuth();
   const navigate = useNavigate();
   const client = useApolloClient();
+  const [logout] = useMutation(LOGOUT_MUTATION);
 
   const handleLogout = async () => {
     try {
-      // Clear the session by making a request to a logout endpoint
-      // For now, we'll just clear the Apollo cache and refetch
+      // Call the logout mutation to destroy session on server
+      await logout();
+      
+      // Clear Apollo cache
       await client.clearStore();
+      
+      // Refetch user data (should return null now)
       await refetch();
+      
+      // Navigate to login
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
       // Force navigation even if logout fails
+      await client.clearStore();
       navigate('/login');
     }
   };

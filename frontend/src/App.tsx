@@ -2,22 +2,14 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
+import LoadingSpinner from './components/LoadingSpinner';
 
 function App() {
   const location = useLocation();
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
-        <div>Loading...</div>
-      </div>
-    );
+    return <LoadingSpinner size="large" message="Loading your session..." />;
   }
 
   return (

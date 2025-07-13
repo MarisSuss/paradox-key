@@ -10,6 +10,7 @@ use GraphQL\Type\Schema;
 use Src\GraphQL\Query\MeQuery;
 use Src\GraphQL\Mutation\LoginMutation;
 use Src\GraphQL\Mutation\RegisterMutation;
+use Src\GraphQL\Mutation\LogoutMutation;
 use GraphQL\Error\DebugFlag;
 
 class Server
@@ -41,6 +42,7 @@ class Server
                 'fields' => [
                     'login' => LoginMutation::get(),
                     'register' => RegisterMutation::get(),
+                    'logout' => LogoutMutation::get(),
                 ],
             ]);
 

@@ -35,7 +35,7 @@ class RegisterMutation
                     throw new ClientSafeException("Password must be at least 8 characters long and contain at least one letter and one number.");
                 }
 
-                // Check if email or username already exists
+                // Check if email already exists
                 if (User::isEmailTaken($args['email'])) {
                     throw new ClientSafeException("Email is already in use.");
                 }
@@ -54,12 +54,12 @@ class RegisterMutation
                     throw new ClientSafeException("Failed to create user.");
                 }
 
-                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_id'] = $user->getId();
 
                 return [
                     'success' => true,
                     'message' => 'Registration successful.',
-                    'user' => $user,
+                    'user' => $user->toArray(),
                 ];
             }
         ];

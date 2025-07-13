@@ -30,8 +30,9 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const { data, loading, refetch } = useQuery(ME_QUERY, {
+  const { data, loading, refetch, error } = useQuery(ME_QUERY, {
     errorPolicy: 'ignore', // Don't throw errors for unauthenticated users
+    notifyOnNetworkStatusChange: true,
   });
   
   const [user, setUser] = useState<User | null>(null);
@@ -43,6 +44,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(null);
     }
   }, [data]);
+
+  // Log network errors for debugging
+  useEffect(() => {
+    if (error && error.networkError) {
+      console.error('Auth network error:', error.networkError);
+    }
+  }, [error]);
 
   const value = {
     user,

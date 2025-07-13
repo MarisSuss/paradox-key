@@ -23,18 +23,16 @@ class LoginMutation
             'resolve' => function ($root, $args) {
                 $user = User::findByEmail($args['email']);
 
-                if (!$user || !User::verifyPassword($args['password'], $user['password_hash'])) {
+                if (!$user || !$user->verifyPassword($args['password'])) {
                     throw new ClientSafeException('Invalid credentials.');
                 }
 
-                unset($user['password_hash']);
-
-                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_id'] = $user->getId();
 
                 return [
                     'success' => true,
                     'message' => 'Login successful',
-                    'user' => $user
+                    'user' => $user->toArray()
                 ];
             },
         ];

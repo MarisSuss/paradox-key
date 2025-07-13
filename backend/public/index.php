@@ -12,6 +12,17 @@ require __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
+// Configure session for production
+if (($_ENV['APP_DEBUG'] ?? 'false') === 'false') {
+    ini_set('session.cookie_secure', '1');
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.cookie_samesite', 'Lax');
+}
+
+ini_set('session.gc_maxlifetime', $_ENV['SESSION_LIFETIME'] ?? '3600');
+ini_set('session.cookie_lifetime', $_ENV['SESSION_LIFETIME'] ?? '3600');
+
 session_start();
 
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
