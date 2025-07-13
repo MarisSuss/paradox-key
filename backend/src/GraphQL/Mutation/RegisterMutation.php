@@ -21,11 +21,27 @@ class RegisterMutation
                 'username' => Type::nonNull(Type::string()),
             ],
             'resolve' => function ($root, $args) {
+                
+                // Validate input
+                if (!User::isValidEmail($args['email'])) {
+                    throw new ClientSafeException("Invalid email format.");
+                }
+                
+                if (!User::isValidUsername($args['username'])) {
+                    throw new ClientSafeException("Username must be 3-20 characters long and contain only letters, numbers, underscores, and hyphens.");
+                }
+                
+                if (!User::isValidPassword($args['password'])) {
+                    throw new ClientSafeException("Password must be at least 8 characters long and contain at least one letter and one number.");
+                }
 
-                $existingUser = User::findByEmailOrUsername($args['email'], $args['username']);
-
-                if ($existingUser) {
-                    throw new ClientSafeException("Email or username is already in use."); // TODO: Change it to return what's existing
+                // Check if email or username already exists
+                if (User::isEmailTaken($args['email'])) {
+                    throw new ClientSafeException("Email is already in use.");
+                }
+                
+                if (User::isUsernameTaken($args['username'])) {
+                    throw new ClientSafeException("Username is already in use.");
                 }
 
                 $user = User::create(

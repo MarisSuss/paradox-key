@@ -16,33 +16,39 @@ class Server
 {
     public function handle(): void
     {
-        $rawInput = file_get_contents('php://input');
-        $input = json_decode($rawInput, true);
-
-        $queryType = new ObjectType([
-            'name' => 'Query',
-            'fields' => [
-                'me' => [
-                    'type' => MeQuery::type(),
-                    'resolve' => [MeQuery::class, 'resolve'],
-                ],
-            ],
-        ]);
-
-        $mutationType = new ObjectType([
-            'name' => 'Mutation',
-            'fields' => [
-                'login' => LoginMutation::get(),
-                'register' => RegisterMutation::get(),
-            ],
-        ]);
-
-        $schema = new Schema([
-            'query' => $queryType,
-            'mutation' => $mutationType,
-        ]);
-
+        header('Content-Type: application/json');
+        
         try {
+            $rawInput = file_get_contents('php://input');
+            $input = json_decode($rawInput, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \InvalidArgumentException('Invalid JSON input');
+            }
+
+            $queryType = new ObjectType([
+                'name' => 'Query',
+                'fields' => [
+                    'me' => [
+                        'type' => MeQuery::type(),
+                        'resolve' => [MeQuery::class, 'resolve'],
+                    ],
+                ],
+            ]);
+
+            $mutationType = new ObjectType([
+                'name' => 'Mutation',
+                'fields' => [
+                    'login' => LoginMutation::get(),
+                    'register' => RegisterMutation::get(),
+                ],
+            ]);
+
+            $schema = new Schema([
+                'query' => $queryType,
+                'mutation' => $mutationType,
+            ]);
+
             $result = GraphQL::executeQuery(
                 $schema,
                 $input['query'] ?? '',
@@ -50,17 +56,28 @@ class Server
                 null,
                 $input['variables'] ?? null
             );
-       
-            echo json_encode(
-                $result->toArray(DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE),
-                JSON_THROW_ON_ERROR
-            );
+
+            $debugFlag = ($_ENV['APP_DEBUG'] ?? 'false') === 'true' 
+                ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE 
+                : DebugFlag::NONE;
+
+            echo json_encode($result->toArray($debugFlag), JSON_THROW_ON_ERROR);
             
         } catch (\Exception $e) {
             http_response_code(500);
-            echo json_encode([
-                'error' => $e->getMessage()
-            ]);
+            error_log("GraphQL Server Error: " . $e->getMessage());
+            
+            $response = [
+                'errors' => [
+                    [
+                        'message' => ($_ENV['APP_DEBUG'] ?? 'false') === 'true' 
+                            ? $e->getMessage() 
+                            : 'Internal server error'
+                    ]
+                ]
+            ];
+            
+            echo json_encode($response);
         }
     }
 }

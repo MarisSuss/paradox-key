@@ -6,6 +6,7 @@ namespace Src\GraphQL\Query;
 
 use Src\Database\Connection;
 use Src\GraphQL\Type\UserType;
+use Src\Model\User;
 
 class MeQuery
 {
@@ -15,11 +16,7 @@ class MeQuery
             return null;
         }
 
-        $pdo = Connection::getInstance();
-        $stmt = $pdo->prepare('SELECT id, username, email FROM users WHERE id = ?');
-        $stmt->execute([$_SESSION['user_id']]);
-
-        return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
+        return User::findById($_SESSION['user_id']);
     }
 
     public static function type()
