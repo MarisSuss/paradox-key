@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useApolloClient, useMutation } from '@apollo/client';
 import { LOGOUT_MUTATION } from '../graphql/logout';
 
@@ -40,7 +40,9 @@ export default function Header() {
       borderBottom: '1px solid #dee2e6'
     }}>
       <div>
-        <h2 style={{ margin: 0, color: '#495057' }}>Paradox Key</h2>
+        <Link to="/" style={{ textDecoration: 'none', color: '#495057' }}>
+          <h2 style={{ margin: 0 }}>Paradox Key</h2>
+        </Link>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <span style={{ color: '#6c757d' }}>

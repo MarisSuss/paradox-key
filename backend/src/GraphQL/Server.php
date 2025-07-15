@@ -8,10 +8,14 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use Src\GraphQL\Query\MeQuery;
+use Src\GraphQL\Query\CurrentGameQuery;
 use Src\GraphQL\Mutation\LoginMutation;
 use Src\GraphQL\Mutation\RegisterMutation;
 use Src\GraphQL\Mutation\LogoutMutation;
 use GraphQL\Error\DebugFlag;
+use Src\GraphQL\Mutation\GameMutation\StartNewGameMutation;
+use Src\GraphQL\Mutation\GameMutation\SavePersonMutation;
+use Src\GraphQL\Mutation\GameMutation\EndGameMutation;
 
 class Server
 {
@@ -34,6 +38,10 @@ class Server
                         'type' => MeQuery::type(),
                         'resolve' => [MeQuery::class, 'resolve'],
                     ],
+                    'currentGame' => [
+                        'type' => CurrentGameQuery::type(),
+                        'resolve' => [CurrentGameQuery::class, 'resolve'],
+                    ],
                 ],
             ]);
 
@@ -43,6 +51,9 @@ class Server
                     'login' => LoginMutation::get(),
                     'register' => RegisterMutation::get(),
                     'logout' => LogoutMutation::get(),
+                    'startNewGame' => StartNewGameMutation::get(),
+                    'savePerson' => SavePersonMutation::get(),
+                    'endGame' => EndGameMutation::get(),
                 ],
             ]);
 
@@ -59,9 +70,7 @@ class Server
                 $input['variables'] ?? null
             );
 
-            $debugFlag = ($_ENV['APP_DEBUG'] ?? 'false') === 'true' 
-                ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE 
-                : DebugFlag::NONE;
+            $debugFlag = DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE;
 
             echo json_encode($result->toArray($debugFlag), JSON_THROW_ON_ERROR);
             
@@ -72,9 +81,8 @@ class Server
             $response = [
                 'errors' => [
                     [
-                        'message' => ($_ENV['APP_DEBUG'] ?? 'false') === 'true' 
-                            ? $e->getMessage() 
-                            : 'Internal server error'
+                        'message' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
                     ]
                 ]
             ];

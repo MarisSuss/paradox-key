@@ -2,7 +2,7 @@
 
 ## Description
 
-Time travel story where you are resonible for saving the world.
+Time travel story where you are responsible for saving the world. You have knowlage of perfect timeline and must inquire Pilot for his timeline to know what to change. Help the Pilot do his task and merge the timelines when finished.
 
 ## Setup
 
