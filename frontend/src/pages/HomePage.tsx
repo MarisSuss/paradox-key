@@ -33,12 +33,12 @@ export default function HomePage() {
       navigate('/game', { state: { gameState: currentGameData.currentGame } });
     }
   };
-
+  /*
   const handleRefreshGames = () => {
     // Refetch the current game query
     window.location.reload();
   };
-
+  */
   if (loadingCurrentGame) {
     return (
       <div>
