@@ -30,6 +30,12 @@ class GameStateType
                             return $gameState->getUserId();
                         }
                     ],
+                    'campaignId' => [
+                        'type' => Type::nonNull(Type::int()),
+                        'resolve' => function ($gameState) {
+                            return $gameState->getCampaignId();
+                        }
+                    ],
                     'timelineAccuracy' => [
                         'type' => Type::nonNull(Type::float()),
                         'resolve' => function ($gameState) {

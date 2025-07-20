@@ -11,26 +11,31 @@ use PDOException;
 class HistoricEvent
 {
     private int $id;
+    private int $campaignId;
     private string $name;
     private string $date;
-    private string $createdAt;
 
     public function __construct(
         int $id,
+        int $campaignId,
         string $name,
-        string $date,
-        string $createdAt = ''
+        string $date
     ) {
         $this->id = $id;
+        $this->campaignId = $campaignId;
         $this->name = $name;
         $this->date = $date;
-        $this->createdAt = $createdAt ?: date('Y-m-d H:i:s');
     }
 
     // Getters
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getCampaignId(): int
+    {
+        return $this->campaignId;
     }
 
     public function getName(): string
@@ -41,11 +46,6 @@ class HistoricEvent
     public function getDate(): string
     {
         return $this->date;
-    }
-
-    public function getCreatedAt(): string
-    {
-        return $this->createdAt;
     }
 
     public static function findAll(): array
@@ -62,9 +62,9 @@ class HistoricEvent
             foreach ($results as $result) {
                 $events[] = new self(
                     (int)$result['id'],
+                    (int)$result['campaign_id'],
                     $result['name'],
-                    $result['date'],
-                    $result['created_at']
+                    $result['date']
                 );
             }
         } catch (PDOException $e) {
@@ -86,9 +86,9 @@ class HistoricEvent
             if ($result) {
                 return new self(
                     (int)$result['id'],
+                    (int)$result['campaign_id'],
                     $result['name'],
-                    $result['date'],
-                    $result['created_at']
+                    $result['date']
                 );
             }
         } catch (PDOException $e) {
@@ -96,5 +96,32 @@ class HistoricEvent
         }
 
         return null;
+    }
+
+    public static function findByCampaignId(int $campaignId): array
+    {
+        $pdo = Connection::getInstance();
+        $stmt = $pdo->prepare("SELECT * FROM historic_events WHERE campaign_id = :campaign_id ORDER BY date ASC");
+        $stmt->bindParam(':campaign_id', $campaignId, PDO::PARAM_INT);
+        
+        $events = [];
+        
+        try {
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            foreach ($results as $result) {
+                $events[] = new self(
+                    (int)$result['id'],
+                    (int)$result['campaign_id'],
+                    $result['name'],
+                    $result['date']
+                );
+            }
+        } catch (PDOException $e) {
+            error_log("Error fetching historic events by campaign: " . $e->getMessage());
+        }
+
+        return $events;
     }
 }

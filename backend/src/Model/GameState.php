@@ -12,6 +12,7 @@ class GameState
 {
     private int $id;
     private int $userId;
+    private int $campaignId;
     private float $timelineAccuracy;
     private bool $isCompleted;
     private string $createdAt;
@@ -20,6 +21,7 @@ class GameState
     public function __construct(
         int $id,
         int $userId,
+        int $campaignId,
         float $timelineAccuracy = 0.0,
         bool $isCompleted = false,
         string $createdAt = '',
@@ -27,6 +29,7 @@ class GameState
     ) {
         $this->id = $id;
         $this->userId = $userId;
+        $this->campaignId = $campaignId;
         $this->timelineAccuracy = $timelineAccuracy;
         $this->isCompleted = $isCompleted;
         $this->createdAt = $createdAt ?: date('Y-m-d H:i:s');
@@ -42,6 +45,11 @@ class GameState
     public function getUserId(): int
     {
         return $this->userId;
+    }
+
+    public function getCampaignId(): int
+    {
+        return $this->campaignId;
     }
 
     public function getTimelineAccuracy(): float
@@ -98,10 +106,11 @@ class GameState
         if ($this->id === 0) {
             // Insert new game
             $stmt = $pdo->prepare("
-                INSERT INTO game_states (user_id, timeline_accuracy, is_completed, created_at) 
-                VALUES (:user_id, :accuracy, :completed, :created_at)
+                INSERT INTO game_states (user_id, campaign_id, timeline_accuracy, is_completed, created_at) 
+                VALUES (:user_id, :campaign_id, :accuracy, :completed, :created_at)
             ");
             $stmt->bindParam(':user_id', $this->userId, PDO::PARAM_INT);
+            $stmt->bindParam(':campaign_id', $this->campaignId, PDO::PARAM_INT);
             $stmt->bindParam(':accuracy', $this->timelineAccuracy, PDO::PARAM_STR);
             $stmt->bindParam(':completed', $this->isCompleted, PDO::PARAM_BOOL);
             $stmt->bindParam(':created_at', $this->createdAt, PDO::PARAM_STR);
@@ -143,6 +152,7 @@ class GameState
                 return new self(
                     (int)$result['id'],
                     (int)$result['user_id'],
+                    (int)$result['campaign_id'],
                     (float)$result['timeline_accuracy'],
                     (bool)$result['is_completed'],
                     $result['created_at'],
@@ -169,6 +179,7 @@ class GameState
                 return new self(
                     (int)$result['id'],
                     (int)$result['user_id'],
+                    (int)$result['campaign_id'],
                     (float)$result['timeline_accuracy'],
                     (bool)$result['is_completed'],
                     $result['created_at'],

@@ -17,8 +17,8 @@ class GameService
     {
         error_log("Creating new game for user: " . $userId);
         
-        // Create new game state
-        $gameState = new GameState(0, $userId);
+        // Create new game state with default campaign (ID 1)
+        $gameState = new GameState(0, $userId, 1);
         
         error_log("GameState created, attempting to save...");
         
@@ -86,8 +86,8 @@ class GameService
         // Get all people in this game
         $people = HistoricPerson::findByGameState($gameStateId);
         
-        // Get all historic events
-        $events = HistoricEvent::findAll();
+        // Get all historic events for this campaign
+        $events = HistoricEvent::findByCampaignId($gameState->getCampaignId());
         
         // Calculate timeline accuracy
         $totalAccuracy = 0.0;
