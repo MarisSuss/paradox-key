@@ -1,4 +1,4 @@
-# Paradox Key
+# Paradox Key [Vibe Time Traveling]
 
 ## Description
 
@@ -10,4 +10,3 @@ Time travel story where you are responsible for saving the world. You have knowl
 
 1. Create `.env` in `/backend`
 2. Set DB credentials
-3. Run: php backend/migrations/launch.php
