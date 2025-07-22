@@ -1,4 +1,4 @@
-# Paradox Key [Vibe Time Traveling]
+# Paradox Key (Vibe Time Traveling)
 
 ## Description
 
