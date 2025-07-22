@@ -14,17 +14,20 @@ class HistoricPerson
     private int $gameStateId;
     private string $name;
     private string $deathDate;
+    private string $alternateDeathDate;
 
     public function __construct(
         int $id,
         int $gameStateId,
         string $name,
-        string $deathDate
+        string $deathDate,
+        string $alternateDeathDate
     ) {
         $this->id = $id;
         $this->gameStateId = $gameStateId;
         $this->name = $name;
         $this->deathDate = $deathDate;
+        $this->alternateDeathDate = $alternateDeathDate;
     }
 
     // Getters
@@ -48,10 +51,20 @@ class HistoricPerson
         return $this->deathDate;
     }
 
+    public function getAlternateDeathDate(): string
+    {
+        return $this->alternateDeathDate;
+    }
+
     // Setters
     public function setDeathDate(string $deathDate): void
     {
         $this->deathDate = $deathDate;
+    }
+
+    public function setAlternateDeathDate(string $alternateDeathDate): void
+    {
+        $this->alternateDeathDate = $alternateDeathDate;
     }
 
     // Business logic methods
@@ -67,20 +80,22 @@ class HistoricPerson
         if ($this->id === 0) {
             // Insert new person
             $stmt = $pdo->prepare("
-                INSERT INTO historic_people (game_state_id, name, death_date) 
-                VALUES (:game_state_id, :name, :death_date)
+                INSERT INTO historic_people (game_state_id, name, death_date, alternate_death_date) 
+                VALUES (:game_state_id, :name, :death_date, :alternate_death_date)
             ");
             $stmt->bindParam(':game_state_id', $this->gameStateId, PDO::PARAM_INT);
             $stmt->bindParam(':name', $this->name, PDO::PARAM_STR);
             $stmt->bindParam(':death_date', $this->deathDate, PDO::PARAM_STR);
+            $stmt->bindParam(':alternate_death_date', $this->alternateDeathDate, PDO::PARAM_STR);
         } else {
             // Update existing person
             $stmt = $pdo->prepare("
                 UPDATE historic_people 
-                SET death_date = :death_date 
+                SET death_date = :death_date, alternate_death_date = :alternate_death_date 
                 WHERE id = :id
             ");
             $stmt->bindParam(':death_date', $this->deathDate, PDO::PARAM_STR);
+            $stmt->bindParam(':alternate_death_date', $this->alternateDeathDate, PDO::PARAM_STR);
             $stmt->bindParam(':id', $this->id, PDO::PARAM_INT);
         }
         
@@ -113,7 +128,8 @@ class HistoricPerson
                     (int)$result['id'],
                     (int)$result['game_state_id'],
                     $result['name'],
-                    $result['death_date']
+                    $result['death_date'],
+                    $result['alternate_death_date'] ?? ''
                 );
             }
         } catch (PDOException $e) {
@@ -137,7 +153,8 @@ class HistoricPerson
                     (int)$result['id'],
                     (int)$result['game_state_id'],
                     $result['name'],
-                    $result['death_date']
+                    $result['death_date'],
+                    $result['alternate_death_date'] ?? ''
                 );
             }
         } catch (PDOException $e) {

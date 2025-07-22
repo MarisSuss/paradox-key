@@ -6,6 +6,7 @@ namespace Tests\Integration\Service;
 
 use Tests\TestCase;
 use Src\Service\GameService;
+use Src\Service\NewGameService;
 use Src\Model\GameState;
 use Src\Model\HistoricPerson;
 
@@ -22,7 +23,7 @@ class GameServiceTest extends TestCase
     {
         $userId = $this->createTestUser();
         
-        $gameState = GameService::createNewGame($userId);
+        $gameState = NewGameService::createNewGame($userId);
         
         $this->assertInstanceOf(GameState::class, $gameState);
         $this->assertEquals($userId, $gameState->getUserId());
@@ -35,7 +36,7 @@ class GameServiceTest extends TestCase
     {
         $userId = $this->createTestUser();
         
-        $gameState = GameService::createNewGame($userId);
+        $gameState = NewGameService::createNewGame($userId);
         $people = HistoricPerson::findByGameState($gameState->getId());
         
         $this->assertCount(1, $people);
@@ -47,13 +48,13 @@ class GameServiceTest extends TestCase
     {
         $this->expectException(\Exception::class);
         
-        GameService::createNewGame(0);
+        NewGameService::createNewGame(0);
     }
 
     public function testSavePersonUpdatesDeathDate(): void
     {
         $userId = $this->createTestUser();
-        $gameState = GameService::createNewGame($userId);
+        $gameState = NewGameService::createNewGame($userId);
         $people = HistoricPerson::findByGameState($gameState->getId());
         
         $winston = $people[0];

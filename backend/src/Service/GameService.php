@@ -11,45 +11,6 @@ use Src\Model\HistoricEvent;
 class GameService
 {
     /**
-     * Creates a new game and generates historic people for it
-     */
-    public static function createNewGame(int $userId): GameState
-    {
-        error_log("Creating new game for user: " . $userId);
-        
-        // Create new game state with default campaign (ID 1)
-        $gameState = new GameState(0, $userId, 1);
-        
-        error_log("GameState created, attempting to save...");
-        
-        if (!$gameState->save()) {
-            error_log("Failed to save game state");
-            throw new \Exception('Failed to create new game');
-        }
-        
-        error_log("GameState saved with ID: " . $gameState->getId());
-
-        // Generate Winston Churchill with death date before WW2
-        $winston = new HistoricPerson(
-            0,
-            $gameState->getId(),
-            'Winston Churchill',
-            '1938-01-01' // Dies before WW2 starts (1939-09-01)
-        );
-        
-        error_log("HistoricPerson created, attempting to save...");
-        
-        if (!$winston->save()) {
-            error_log("Failed to save Winston Churchill");
-            throw new \Exception('Failed to create Winston Churchill');
-        }
-        
-        error_log("Winston Churchill saved with ID: " . $winston->getId());
-        
-        return $gameState;
-    }
-
-    /**
      * Saves a historic person's life by extending their death date
      */
     public static function savePersonLife(int $gameStateId, int $personId): bool
@@ -67,7 +28,12 @@ class GameService
         }
 
         // Extend their death date to after WW2 (save their life)
-        $person->setDeathDate('1965-01-24'); // Winston's actual death date
+        // Use the alternate death date if available, otherwise use a default extension
+        $newDeathDate = !empty($person->getAlternateDeathDate()) 
+            ? $person->getAlternateDeathDate() 
+            : '1965-01-24'; // Default extension date
+        
+        $person->setDeathDate($newDeathDate);
         
         return $person->save();
     }
@@ -116,6 +82,64 @@ class GameService
             'people_saved' => array_filter($people, fn($p) => $p->isAliveAt('1939-09-01')), // WW2 start date
             'total_people' => count($people)
         ];
+    }
+
+    /**
+     * Gets the current state of a game including people and their status
+     */
+    public static function getGameStatus(int $gameStateId): array
+    {
+        $gameState = GameState::find($gameStateId);
+        if (!$gameState) {
+            throw new \Exception('Game not found');
+        }
+
+        $people = HistoricPerson::findByGameState($gameStateId);
+        $events = HistoricEvent::findByCampaignId($gameState->getCampaignId());
+
+        $peopleStatus = [];
+        foreach ($people as $person) {
+            $peopleStatus[] = [
+                'id' => $person->getId(),
+                'name' => $person->getName(),
+                'death_date' => $person->getDeathDate(),
+                'alternate_death_date' => $person->getAlternateDeathDate(),
+                'is_alive_at_ww2' => $person->isAliveAt('1939-09-01'),
+                'can_be_saved' => !$person->isAliveAt('1939-09-01')
+            ];
+        }
+
+        return [
+            'game_id' => $gameState->getId(),
+            'user_id' => $gameState->getUserId(),
+            'campaign_id' => $gameState->getCampaignId(),
+            'is_completed' => $gameState->isCompleted(),
+            'timeline_accuracy' => $gameState->getTimelineAccuracy(),
+            'people' => $peopleStatus,
+            'events' => array_map(fn($e) => [
+                'name' => $e->getName(),
+                'date' => $e->getDate()
+            ], $events)
+        ];
+    }
+
+    /**
+     * Checks if a person can be saved in the current game state
+     */
+    public static function canSavePerson(int $gameStateId, int $personId): bool
+    {
+        $gameState = GameState::find($gameStateId);
+        if (!$gameState || $gameState->isCompleted()) {
+            return false;
+        }
+
+        $person = HistoricPerson::findById($personId);
+        if (!$person || $person->getGameStateId() !== $gameStateId) {
+            return false;
+        }
+
+        // Can only save people who are currently dead before the critical event
+        return !$person->isAliveAt('1939-09-01');
     }
 
     /**

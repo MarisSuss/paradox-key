@@ -31,6 +31,21 @@ $pdo->exec("
     )
 ");
 
+// Historic person template table
+$pdo->exec("
+    CREATE TABLE historic_people (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        death_date DATE NOT NULL
+    )
+");
+
+// Populate historic people template (only Churchill for now)
+$pdo->exec("
+    INSERT INTO historic_people (name, death_date) VALUES
+    ('Winston Churchill', '1965-01-24')
+");
+
 // Campaigns table
 $pdo->exec("
     CREATE TABLE campaigns (
@@ -66,7 +81,7 @@ $pdo->exec("
     )
 ");
 
-// Historic people table (per game instance)
+// Historic person table (per game instance)
 $pdo->exec("
     CREATE TABLE historic_people (
         id INT AUTO_INCREMENT PRIMARY KEY,
