@@ -13,19 +13,15 @@ $dotenv->load();
 
 $pdo = Connection::getInstance();
 
-// Disable foreign key checks temporarily
-$pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
-
-// Drop existing tables to start fresh
+// Drop existing tables to start fresh (order matters for foreign keys)
+$pdo->exec("DROP TABLE IF EXISTS dialogue_responses");
+$pdo->exec("DROP TABLE IF EXISTS dialogue_prompts");
 $pdo->exec("DROP TABLE IF EXISTS historic_people");
 $pdo->exec("DROP TABLE IF EXISTS historic_person_templates");
 $pdo->exec("DROP TABLE IF EXISTS historic_events");  
 $pdo->exec("DROP TABLE IF EXISTS game_states");
 $pdo->exec("DROP TABLE IF EXISTS campaigns");
 $pdo->exec("DROP TABLE IF EXISTS users");
-
-// Re-enable foreign key checks
-$pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
 
 // Users table
 $pdo->exec("
@@ -95,6 +91,32 @@ $pdo->exec("
         death_date DATE NOT NULL,
         alternate_death_date DATE NOT NULL,
         FOREIGN KEY (game_state_id) REFERENCES game_states(id) ON DELETE CASCADE
+    )
+");
+
+// Dialogue prompts table (AI requests from users)
+$pdo->exec("
+    CREATE TABLE dialogue_prompts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        campaign_id INT NOT NULL,
+        prompt_text TEXT NOT NULL,
+        context TEXT NULL,
+        difficulty_level ENUM('easy', 'medium', 'hard') DEFAULT 'medium',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+    )
+");
+
+// Dialogue responses table (available AI response options)
+$pdo->exec("
+    CREATE TABLE dialogue_responses (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        prompt_id INT NOT NULL,
+        response_text TEXT NOT NULL,
+        outcome_type ENUM('helpful', 'neutral', 'harmful') DEFAULT 'neutral',
+        timeline_impact DECIMAL(5,2) DEFAULT 0.00,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (prompt_id) REFERENCES dialogue_prompts(id) ON DELETE CASCADE
     )
 ");
 
