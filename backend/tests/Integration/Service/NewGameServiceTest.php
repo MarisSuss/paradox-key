@@ -56,7 +56,7 @@ class NewGameServiceTest extends TestCase
         $winston = $people[0];
         $this->assertEquals('Winston Churchill', $winston->getName());
         $this->assertEquals('1938-01-01', $winston->getDeathDate());
-        $this->assertEquals('1965-01-24', $winston->getAlternateDeathDate());
+        $this->assertNotEmpty($winston->getAlternateDeathDate()); // Should have a random alternate date
         $this->assertEquals($gameState->getId(), $winston->getGameStateId());
     }
 
@@ -84,7 +84,7 @@ class NewGameServiceTest extends TestCase
         $this->assertArrayHasKey('difficulty', $firstCampaign);
         
         $this->assertEquals(1, $firstCampaign['id']);
-        $this->assertEquals('World War II', $firstCampaign['name']);
+        $this->assertEquals('World War II Campaign', $firstCampaign['name']);
     }
 
     public function testCreateNewGameWithInvalidUserId(): void

@@ -25,16 +25,13 @@ class NewGameService
 
     private static function generateHistoricPeople(GameState $gameState): void
     {
-        $winston = new HistoricPerson(
-            0,
-            $gameState->getId(),
-            'Winston Churchill',
-            '1938-01-01',
-            '1965-01-24'
-        );
+        $templates = HistoricPersonTemplate::findByCampaignId($gameState->getCampaignId());
         
-        if (!$winston->save()) {
-            throw new \Exception('Failed to create Winston Churchill');
+        foreach ($templates as $template) {
+            $person = self::createPersonFromTemplate($template, $gameState->getId());
+            if (!$person->save()) {
+                throw new \Exception('Failed to create historic person: ' . $template->getName());
+            }
         }
     }
 
@@ -44,8 +41,8 @@ class NewGameService
             0,
             $gameStateId,
             $template->getName(),
-            $template->getDeathDate(),
-            $template->getDeathDate()
+            $template->getOriginalDeathDate(),
+            $template->getAlternateDeathDate()
         );
     }
 
@@ -59,7 +56,7 @@ class NewGameService
         return [
             [
                 'id' => 1,
-                'name' => 'World War II',
+                'name' => 'World War II Campaign',
                 'description' => 'Navigate the critical events of World War II',
                 'difficulty' => 'Medium'
             ]

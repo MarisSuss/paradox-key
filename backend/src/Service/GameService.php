@@ -6,6 +6,7 @@ namespace Src\Service;
 
 use Src\Model\GameState;
 use Src\Model\HistoricPerson;
+use Src\Model\HistoricPersonTemplate;
 use Src\Model\HistoricEvent;
 
 class GameService
@@ -27,15 +28,29 @@ class GameService
             return false;
         }
 
-        // Extend their death date to after WW2 (save their life)
-        // Use the alternate death date if available, otherwise use a default extension
-        $newDeathDate = !empty($person->getAlternateDeathDate()) 
-            ? $person->getAlternateDeathDate() 
-            : '1965-01-24'; // Default extension date
+        // Get a random alternate death date from templates if available
+        $newDeathDate = self::getNewDeathDateForPerson($person, $gameState->getCampaignId());
         
         $person->setDeathDate($newDeathDate);
         
         return $person->save();
+    }
+
+    private static function getNewDeathDateForPerson(HistoricPerson $person, int $campaignId): string
+    {
+        // Try to find a matching template for this person
+        $templates = HistoricPersonTemplate::findByCampaignId($campaignId);
+        
+        foreach ($templates as $template) {
+            if ($template->getName() === $person->getName()) {
+                return $template->getRandomAlternateDeathDate();
+            }
+        }
+        
+        // Fallback: use the person's current alternate death date or default
+        return !empty($person->getAlternateDeathDate()) 
+            ? $person->getAlternateDeathDate() 
+            : '1965-01-24';
     }
 
     /**

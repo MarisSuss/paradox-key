@@ -13,12 +13,19 @@ $dotenv->load();
 
 $pdo = Connection::getInstance();
 
+// Disable foreign key checks temporarily
+$pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+
 // Drop existing tables to start fresh
 $pdo->exec("DROP TABLE IF EXISTS historic_people");
+$pdo->exec("DROP TABLE IF EXISTS historic_person_templates");
 $pdo->exec("DROP TABLE IF EXISTS historic_events");  
-$pdo->exec("DROP TABLE IF EXISTS campaigns");
 $pdo->exec("DROP TABLE IF EXISTS game_states");
+$pdo->exec("DROP TABLE IF EXISTS campaigns");
 $pdo->exec("DROP TABLE IF EXISTS users");
+
+// Re-enable foreign key checks
+$pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
 
 // Users table
 $pdo->exec("
@@ -29,21 +36,6 @@ $pdo->exec("
         password_hash VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-");
-
-// Historic person template table
-$pdo->exec("
-    CREATE TABLE historic_people (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        death_date DATE NOT NULL
-    )
-");
-
-// Populate historic people template (only Churchill for now)
-$pdo->exec("
-    INSERT INTO historic_people (name, death_date) VALUES
-    ('Winston Churchill', '1965-01-24')
 ");
 
 // Campaigns table
@@ -81,13 +73,27 @@ $pdo->exec("
     )
 ");
 
-// Historic person table (per game instance)
+// Historic person templates table (templates for creating people)
+$pdo->exec("
+    CREATE TABLE historic_person_templates (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        campaign_id INT NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        original_death_date DATE NOT NULL,
+        alternate_death_dates JSON NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+    )
+");
+
+// Historic people table (per game instance)
 $pdo->exec("
     CREATE TABLE historic_people (
         id INT AUTO_INCREMENT PRIMARY KEY,
         game_state_id INT NOT NULL,
         name VARCHAR(255) NOT NULL,
         death_date DATE NOT NULL,
+        alternate_death_date DATE NOT NULL,
         FOREIGN KEY (game_state_id) REFERENCES game_states(id) ON DELETE CASCADE
     )
 ");
@@ -95,7 +101,7 @@ $pdo->exec("
 // Insert default campaigns
 $pdo->exec("
     INSERT INTO campaigns (name, description) VALUES
-    ('Main Campaign', 'The main historical timeline campaign')
+    ('World War II Campaign', 'Navigate the critical events of World War II')
 ");
 
 // Insert default historic events
